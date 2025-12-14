@@ -1,150 +1,90 @@
-# Model Zoo
+# Ununennium Model Zoo & Architecture Theory
 
-Comprehensive catalog of pre-trained models and architectures available in Ununennium.
+## 1. Design Philosophy
 
-## Architectures Overview
+The Ununennium Model Zoo is not merely a collection of weights; it is a repository of **Production-Grade**, **Geospatially-Aware** neural architectures. Each model is curated to handle the specific challenges of Earth Observation:
+*   **Multi-Modal Inputs:** Native support for $N$-channel inputs (Optical + SAR + DEM).
+*   **Scale Invariance:** Architectures designed to handle GSD (Ground Sampling Distance) variations.
+*   **Rotation Equivariance:** Recognition that "up" on a map is arbitrary.
 
-| Architecture | Task | Parameters | FLOPs (512×512) | Memory |
-|--------------|------|------------|-----------------|--------|
-| U-Net ResNet-18 | Segmentation | 14.3M | 23.4G | 2.1 GB |
-| U-Net ResNet-50 | Segmentation | 32.5M | 58.7G | 4.8 GB |
-| U-Net EfficientNet-B4 | Segmentation | 19.3M | 41.2G | 3.6 GB |
-| ResNet-50 Classifier | Classification | 25.5M | 4.1G | 0.8 GB |
-| Pix2Pix | Translation | 54.4M | 82.3G | 6.2 GB |
-| CycleGAN | Translation | 28.3M × 2 | 124.6G | 8.4 GB |
-| PINN (MLP-4×128) | Physics | 0.05M | 0.1G | 0.02 GB |
+---
 
-## Segmentation Models
+## 2. Segmentation Architectures
 
-### U-Net
+### 2.1 The U-Net Family (Standard, ResNet, EfficientNet)
 
-The U-Net architecture uses an encoder-decoder structure with skip connections:
+The workhorse of semantic segmentation.
 
-**Architecture:**
-```
-Input (C×H×W)
-    │
-    ▼
-┌──────────────────────────────┐
-│        Encoder (Backbone)    │
-│  ┌─────┐  ┌─────┐  ┌─────┐  │
-│  │ E1  │→ │ E2  │→ │ E3  │→ ... │
-│  └──┬──┘  └──┬──┘  └──┬──┘  │
-└─────┼────────┼───────┼──────┘
-      │ skip   │ skip  │ skip
-      ▼        ▼       ▼
-┌─────┴────────┴───────┴──────┐
-│         Decoder             │
-│  ┌─────┐  ┌─────┐  ┌─────┐  │
-│  │ D3  │← │ D2  │← │ D1  │  │
-│  └─────┘  └─────┘  └─────┘  │
-└──────────────────────────────┘
-    │
-    ▼
-Output (K×H×W)  [K = num_classes]
-```
+**Mathematical Formulation:**
+Let $E$ be the encoder function and $D$ be the decoder.
+$$ z_l = E_l(z_{l-1}) \quad \text{(Downsampling)} $$
+$$ x_l = D_l(x_{l+1}, z_l) \quad \text{(Upsampling + Skip)} $$
 
-**Usage:**
-```python
-from ununennium.models import create_model
+The skip connection $z_l$ is critical in EO because determining boundaries (e.g., road vs. building) requires high-frequency spatial details that are lost in the bottleneck.
 
-model = create_model(
-    "unet_resnet50",
-    in_channels=12,
-    num_classes=10,
-    pretrained=True,
-)
-```
+**Ununennium Variations:**
+*   **`unet_resnet50`**: Deep residual backbone. Best for large datasets.
+*   **`unet_efficientnet_b4`**: Compound scaling. Best accuracy/FLOPS trade-off.
+*   **Dynamic Upsampling:** We use standard `bilinear` interpolation rather than `ConvTranspose` to avoid checkerboard artifacts (Odena et al., 2016), which are detrimental for geospatial vectorization.
 
-**Benchmarks (Sentinel-2, 10-class segmentation):**
+### 2.2 DeepLabV3+ (Atrous Convolution)
 
-| Backbone | mIoU | Dice | FPS (A100) | Training Time |
-|----------|------|------|------------|---------------|
-| ResNet-18 | 0.72 | 0.81 | 185 | 2.1h |
-| ResNet-34 | 0.75 | 0.83 | 152 | 2.8h |
-| ResNet-50 | 0.78 | 0.86 | 142 | 3.5h |
-| EfficientNet-B4 | 0.81 | 0.88 | 98 | 4.2h |
+Designed to capture multi-scale context without losing spatial resolution.
 
-## GAN Models
+**Atrous (Dilated) Convolution:**
+$$ y[i] = \sum_k x[i + r \cdot k] w[k] $$
+Where $r$ is the dilation rate. This expands the Receptive Field (RF) exponentially without increasing parameters.
 
-### Pix2Pix
+**ASPP (Atrous Spatial Pyramid Pooling):**
+Parallel branches with rates $r=\{6, 12, 18\}$.
+*   *EO Application:* Detecting large objects (lakes) and small objects (cars) simultaneously in the same scene.
 
-Paired image-to-image translation using conditional GAN.
+---
 
-**Loss Function:**
-```
-L_total = L_cGAN(G, D) + λ × L_L1(G)
-```
+## 3. Generative Adversarial Networks (GANs)
 
-Where:
-- `L_cGAN` = adversarial loss
-- `L_L1` = reconstruction loss
-- `λ` = 100 (default)
+### 3.1 Pix2Pix (Conditional GAN)
 
-**Applications:**
+Used for paired translation (e.g., SAR $\to$ Optical, Cloud $\to$ Clear).
 
-| Task | Input | Output | Metric |
-|------|-------|--------|--------|
-| Pan-sharpening | MS + PAN | High-res MS | PSNR: 32.4 dB |
-| Cloud removal | Cloudy | Cloud-free | SSIM: 0.91 |
-| SAR → Optical | SAR | Optical | SAM: 0.12 |
+**cGAN Objective:**
+$$ \mathcal{L}_{cGAN}(G, D) = \mathbb{E}_{x,y}[\log D(x, y)] + \mathbb{E}_{x,z}[\log(1 - D(x, G(x, z)))] $$
+**L1 Term:**
+$$ \mathcal{L}_{L1}(G) = \mathbb{E}_{x,y,z}[\| y - G(x, z) \|_1] $$
 
-### CycleGAN
+We use the **PatchGAN** discriminator, which classifies $N \times N$ patches as real/fake. This enforces high-frequency texture correctness (texture consistency) critical for visual interpretation.
 
-Unpaired image-to-image translation using cycle consistency.
+### 3.2 CycleGAN (Unpaired Translation)
 
-**Loss Function:**
-```
-L = L_GAN(G, D_Y) + L_GAN(F, D_X) + λ_cyc × L_cyc(G, F) + λ_id × L_id(G, F)
-```
+Used for domain adaptation (e.g., Summer $\to$ Winter) where paired data is impossible.
 
-**Applications:**
+**Cycle Consistency Loss:**
+$$ x \to G(x) \to F(G(x)) \approx x $$
+$$ \| F(G(x)) - x \|_1 $$
 
-| Task | Domain A | Domain B | FID Score |
-|------|----------|----------|-----------|
-| Season transfer | Summer | Winter | 45.2 |
-| Sensor conversion | Sentinel-2 | Landsat-8 | 38.7 |
-| Style transfer | Clear | Hazy | 52.1 |
+This constraint prevents "mode collapse" and ensures the semantic content (geometry of roads/buildings) is preserved while the style (season/sensor) changes.
 
-## Physics-Informed Models
+---
 
-### PINN (Physics-Informed Neural Networks)
+## 4. Physics-Informed Neural Networks (PINNs)
 
-Incorporates physical laws as soft constraints.
+PINNs integrate differential equations directly into the loss function.
 
-**Loss Function:**
-```
-L_total = w_data × L_data + w_pde × L_PDE + w_bc × L_BC
-```
+**Total Loss:**
+$$ \mathcal{L} = \mathcal{L}_{data} + \lambda \mathcal{L}_{PDE} $$
 
-Where:
-- `L_data` = Mean squared error on observations
-- `L_PDE` = PDE residual at collocation points
-- `L_BC` = Boundary condition residual
+Where $\mathcal{L}_{PDE}$ is the residual of the governing equation (e.g., Diffusion, Navier-Stokes).
+*   *Application:* Modeling atmospheric dispersion, groundwater flow, or sea surface temperature interpolation.
+*   *Advantage:* Generalizes outside the training data because it obeys physical laws.
 
-**Supported PDEs:**
+---
 
-| Equation | Formula | Application |
-|----------|---------|-------------|
-| Diffusion | ∂u/∂t = D∇²u | Heat propagation |
-| Advection | ∂u/∂t + v·∇u = 0 | Transport modeling |
-| Adv-Diff | ∂u/∂t + v·∇u = D∇²u | Pollutant spread |
+## 5. Vision Transformers (ViT)
 
-## Model Selection Guide
+Moving beyond convolutions.
 
-| Scenario | Recommended Model | Reason |
-|----------|-------------------|--------|
-| Limited data (<1000 samples) | U-Net ResNet-18 | Fewer parameters |
-| High accuracy required | U-Net EfficientNet-B4 | Best performance |
-| Real-time inference | U-Net ResNet-18 | Fastest |
-| Unpaired data | CycleGAN | No paired supervision |
-| Physical constraints | PINN | Enforces physics |
-| Super-resolution | ESRGAN | Perceptual quality |
+**Self-Attention Mechanism:**
+$$ \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V $$
 
-## Pre-trained Weights
-
-| Model | Dataset | Classes | Size | Download |
-|-------|---------|---------|------|----------|
-| unet_resnet50_s2 | LandCover.ai | 10 | 125 MB | [Link]() |
-| unet_effb4_deepglobe | DeepGlobe | 7 | 78 MB | [Link]() |
-| pix2pix_sar2opt | SEN12MS | - | 210 MB | [Link]() |
+In EO, ViTs excel at **Global Context**. A pixel depends on the entire scene (e.g., identifying an airport requires seeing the runway arrangement, not just local asphalt texture).
+*   **Mae (Masked Autoencoders):** We support MAE pre-training on unlabeled satellite imagery to learn robust representation foundations.

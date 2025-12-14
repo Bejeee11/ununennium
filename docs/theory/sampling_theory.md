@@ -1,126 +1,111 @@
-# Sampling Theory
+# Sampling Theory in Geospatial Machine Learning
 
-Mathematical foundations for spatial sampling in remote sensing.
+## 1. The Spatial Sampling Challenge
 
-## Nyquist-Shannon Sampling Theorem
+In classical statistics, Random Sampling ensures that samples are representative of the population. In geospatial domains, **Spatial Autocorrelation** (see related theory) renders Simple Random Sampling (SRS) inefficient and biased.
 
-For a band-limited signal with maximum frequency `f_max`, alias-free reconstruction requires:
+**The Problem:**
+1.  **Redundancy:** SRS oversamples dominant classes (e.g., water, bare soil) and background.
+2.  **Bias:** Adjacent samples provide little new information ($I_{effective} \ll I_{total}$).
+3.  **Representativeness:** SRS may completely miss rare features (e.g., landslides, distinct roof types) scattered sparsely.
 
-```
-f_s ≥ 2 × f_max
-```
+---
 
-**Spatial interpretation:**
-- `GSD` (Ground Sample Distance) ≤ `λ_min / 2`
-- Where `λ_min` is the smallest spatial feature of interest
+## 2. Advanced Sampling Strategies
 
-## Spatial Resolution and GSD
+### 2.1 Stratified Random Sampling
 
-### Ground Sample Distance
+The population is divided into strata (e.g., land cover classes) and random sampling is performed within each stratum.
 
-```
-GSD = (H × p) / f
-```
+**Formula for Sample Allocation:**
+$$ n_h = n \cdot \frac{N_h \sigma_h}{\sum N_i \sigma_i} $$
+(Optimal allocation minimizing variance, where $N_h$ is stratum size and $\sigma_h$ is standard deviation).
 
-Where:
-- `H` = altitude (m)
-- `p` = pixel pitch (m)
-- `f` = focal length (m)
+*   **Implementation:** In Ununennium, we use the `WeightedRandomSampler` in PyTorch, weighting inverse to class frequency.
 
-### Resolution Types
+### 2.2 Systematic Sampling
 
-| Type | Definition | Example |
-|------|------------|---------|
-| Spatial | Ground area per pixel | 10m × 10m |
-| Spectral | Number of bands | 13 bands |
-| Radiometric | Bits per pixel | 12-bit |
-| Temporal | Revisit frequency | 5 days |
+Samples are taken at regular intervals (grid).
+*   **Pros:** Uniform spatial coverage.
+*   **Cons:** vulnerable to periodicity in the landscape (e.g., row crops, city blocks aligned with grid).
 
-## Aliasing Effects
+### 2.3 Poisson Disk Sampling
 
-When sampling below Nyquist:
+Generates samples such that no two samples are closer than partial distance $r$.
+*   **Benefit:** Blue Noise property (random but uniform).
+*   **Application:** Ideal for selecting tile centers for training to maximize coverage while minimizing overlap.
 
-```
-f_alias = |f_signal - n × f_s|
-```
+---
 
-**Visual effects:**
+## 3. Tile Sampling Strategies in Deep Learning
 
-| Pattern | Cause | Mitigation |
-|---------|-------|------------|
-| Moiré | High-frequency structure | Anti-aliasing filter |
-| Jagged edges | Undersampling | Super-resolution |
-| Mixed pixels | Sub-pixel features | Spectral unmixing |
+Training CNNs on gigapixel satellite images requires tiling. The sampling strategy for tiles defines the effective dataset.
 
-## Point Spread Function (PSF)
+### 3.1 Random Crop
+$$ x \sim U(0, W-w), \quad y \sim U(0, H-h) $$
+*   **Issue:** 90% of crops might be "empty" (all ocean/forest).
 
-The system PSF is the convolution of all components:
+### 3.2 Importance Sampling (Hard Example Mining)
+Sampling probability is proportional to the expected loss or feature density.
 
-```
-PSF_total = PSF_optics ⊛ PSF_detector ⊛ PSF_motion
-```
+$$ P(x, y) \propto \sum_{i,j \in \text{patch}} \mathbb{1}(pixel_{ij} == \text{rare_class}) $$
 
-**Modulation Transfer Function (MTF):**
-```
-MTF(f) = |ℱ{PSF}(f)|
-```
+Ununennium's `GeoSampler` supports providing a `probability_map` (e.g., edge density, class rarity) to bias sampling towards informative regions.
 
-### MTF at Nyquist
+### 3.3 Overlap (Stride) Calculation
 
-| Sensor | MTF @ Nyquist | Quality |
-|--------|---------------|---------|
-| Sentinel-2 B02 | 0.15 | Good |
-| Landsat-8 Pan | 0.10 | Acceptable |
-| WorldView-3 | 0.25 | Excellent |
+For inference, we require complete coverage.
+$$ \text{Stride} = \text{Size} - \text{Overlap} $$
 
-## Effective Resolution
+**Overlap Strategies:**
+1.  **Mirrored:** Predict on overlapping regions and average. Reduces edge artifacts.
+2.  **Gaussian Weighted:** Center pixels get weight 1.0, edges 0.0.
+    $$ W(x, y) = \exp\left(-\frac{(x - c_x)^2 + (y - c_y)^2}{2\sigma^2}\right) $$
 
-Accounting for atmospheric effects:
+---
 
-```
-R_eff = √(R_sensor² + R_atm² + R_motion²)
-```
+## 4. Temporal Sampling
 
-## Optimal Sampling Strategies
+For Time Series (SITS) analysis:
 
-### Regular Grid
+### 4.1 Nyquist in Time
+To capture phenological cycles (vegetation growth), sampling frequency must exceed twice the cycle frequency.
+*   **Crop Cycle:** ~120 days. Requires visible image every <60 days.
+*   **Dynamic Events:** Flood (hours/days). Requires high-revisit constellations.
 
-```
-x_i = x_0 + i × Δx
-y_j = y_0 + j × Δy
-```
+### 4.2 Interpolation of Missing Data
+Clouds cause irregular sampling.
+*   **L-S (Lomb-Scargle) Periodogram:** For spectral analysis of unevenly spaced data.
+*   **Linear/Spline:** Simple filling (assumes differentiability).
 
-**Pros:** Simple, efficient
-**Cons:** May miss periodic structures
+---
 
-### Stratified Random
+## 5. Ununennium Implementation: The `GeoSampler`
 
-Each stratum receives `n/k` samples:
+Our `tiling.sampler` module implements a highly efficient, CRS-aware sampler.
 
-```
-Sample_stratum_i ~ Uniform(bounds_i)
-```
-
-**Variance reduction:**
-```
-Var_stratified ≤ Var_simple
-```
-
-### Latin Hypercube
-
-Ensures each row and column has exactly one sample:
-
-```
-x_i = (π(i) + U_i) / n
+```mermaid
+classDiagram
+    class Sampler {
+        <<Abstract>>
+        +sample(roi, size)
+    }
+    class RandomGeoSampler {
+        +probability_map
+    }
+    class GridGeoSampler {
+        +stride
+        +padding
+    }
+    class ConstrainedGeoSampler {
+        +mask_layer
+        +min_feature_ratio
+    }
+    Sampler <|-- RandomGeoSampler
+    Sampler <|-- GridGeoSampler
+    Sampler <|-- ConstrainedGeoSampler
 ```
 
-Where `π` is a random permutation and `U ~ Uniform(0, 1)`.
-
-## Recommendations
-
-| Scenario | Sampling Strategy | Sample Rate |
-|----------|-------------------|-------------|
-| Urban areas | Regular grid | 2× Nyquist |
-| Agriculture | Stratified | 1.5× Nyquist |
-| Forest | Random | 1.5× Nyquist |
-| Mixed | Latin Hypercube | 2× Nyquist |
+**Key Feature: Constrained Sampling**
+"Only sample a patch if at least 10% of pixels contain valid data and 5% contain the target class."
+This logic is pushed to C++ via Rasterio/GDAL for speed, avoiding loading empty numpy arrays into RAM.

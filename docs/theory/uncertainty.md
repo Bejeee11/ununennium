@@ -1,146 +1,117 @@
-# Uncertainty Quantification
+# Uncertainty Quantification in Geospatial AI
 
-Methods for estimating and quantifying prediction uncertainty.
+## 1. The Epistemic and Aleatoric Dichotomy
 
-## Types of Uncertainty
+In safety-critical EO applications (flood mapping, deforestation monitoring), a point prediction $\hat{y}$ is insufficient. We require a full predictive distribution $P(y|x)$. Uncertainty is formally decomposed into two orthogonal components:
 
-### Aleatoric Uncertainty
+### 1.1 Aleatoric Uncertainty (Data Uncertainty)
+Captures noise inherent in the observations.
+*   **Source:** Sensor noise, atmospheric scattering, labeling ambiguity (e.g., transition zones between forest and shrub).
+*   **Properties:** Irreducible with more data.
+*   **Modeling:** Learned by the loss function (e.g., Heteroscedastic Regression).
 
-**Definition:** Inherent randomness in the data, irreducible.
+### 1.2 Epistemic Uncertainty (Model Uncertainty)
+Captures ignorance about the model parameters.
+*   **Source:** Lack of training data in a specific domain, distribution shift (Covariate Shift).
+*   **Properties:** Reducible with more data.
+*   **Modeling:** Bayesian Ensembles, Monte Carlo Dropout.
 
-**Sources:**
-- Sensor noise
-- Atmospheric variability
-- Sub-pixel mixing
+---
 
-**Modeling:**
-```
-p(y|x, θ) = N(μ(x), σ²(x))
-```
+## 2. Bayesian Deep Learning Methods
 
-Where the network predicts both `μ` and `σ²`.
+### 2.1 Monte Carlo (MC) Dropout
 
-### Epistemic Uncertainty
+Approximates a Deep Gaussian Process. During inference, dropout is kept active, and $T$ stochastic forward passes are performed.
 
-**Definition:** Model uncertainty due to limited data, reducible.
+**Prediction:**
+$$ \mathbb{E}[y] \approx \frac{1}{T} \sum_{t=1}^T \hat{y}_t $$
 
-**Sources:**
-- Limited training data
-- Distribution shift
-- Model misspecification
+**Uncertainty (Entropy):**
+$$ H(y|x) = - \sum_{c} p_{avg}(c) \log p_{avg}(c) $$
 
-**Behavior:**
-```
-lim_{n→∞} Epistemic Uncertainty → 0
-```
+Where $p_{avg}$ is the averaged probability across $T$ passes.
 
-## Methods
+### 2.2 Deep Ensembles
 
-### Monte Carlo Dropout
+Training $M$ independent models with random initialization and shuffled data batches. This is the **gold standard** for uncertainty quality but computationally expensive.
 
-Apply dropout at test time:
+**Total Variance:**
+$$ \text{Var}(y) = \underbrace{\frac{1}{M} \sum_{m=1}^M \text{Var}(y_m)}_{\text{Aleatoric}} + \underbrace{\frac{1}{M} \sum_{m=1}^M (\mu_m - \bar{\mu})^2}_{\text{Epistemic}} $$
 
-```
-y_mean = (1/T) × Σ_t f(x; θ, z_t)
-y_var = (1/T) × Σ_t (f(x; θ, z_t) - y_mean)²
-```
+### 2.3 Evidential Deep Learning (EDL)
 
-Where `z_t` are dropout masks and `T` is number of samples.
+Ununennium implements EDL, which places a Dirichlet distribution over the class probabilities. The network predicts the *parameters* $\alpha$ of the Dirichlet distribution rather than the probabilities directly.
 
-| Samples (T) | Quality | Overhead |
-|-------------|---------|----------|
-| 5 | Poor | 5× |
-| 10 | Acceptable | 10× |
-| 30 | Good | 30× |
-| 100 | Excellent | 100× |
+**Confidence:**
+$$ \text{Evidence } e_k = f(x)_k $$
+$$ \alpha_k = e_k + 1 $$
+$$ S = \sum \alpha_k $$
+$$ \text{Uncertainty } u = \frac{K}{S} $$
 
-### Deep Ensembles
+This allows single-pass deterministic uncertainty estimation.
 
-Train multiple models independently:
+---
 
-```
-y_mean = (1/M) × Σ_m f_m(x)
-y_var = (1/M) × Σ_m (f_m(x) - y_mean)²
-```
+## 3. Metrics for Uncertainty
 
-**Advantages:**
-- Simple to implement
-- Parallelizable
-- State-of-the-art calibration
+### 3.1 Expected Calibration Error (ECE)
 
-**Disadvantages:**
-- M× training cost
-- M× inference cost
-- Storage overhead
+Measures if confidence matches accuracy. A perfectly calibrated model with 80% confidence should be correct 80% of the time.
 
-### Heteroscedastic Loss
+$$ \text{ECE} = \sum_{m=1}^M \frac{|B_m|}{N} | \text{acc}(B_m) - \text{conf}(B_m) | $$
 
-Train to predict mean and variance:
+Where $B_m$ are bins of confidence scores.
 
-```
-L = (1/2σ²)(y - μ)² + (1/2)log(σ²)
-```
+### 3.2 Brier Score
 
-### Bayesian Neural Networks
+Proper scoring rule that measures the mean squared difference between predicted probability distribution and one-hot encoded ground truth.
 
-Place priors on weights:
+$$ BS = \frac{1}{N} \sum_{i=1}^N \sum_{k=1}^K (f(x_i)_k - y_{i,k})^2 $$
 
-```
-p(θ|D) ∝ p(D|θ) × p(θ)
-```
+---
 
-**Inference methods:**
+## 4. Geospatial Implications of Uncertainty
 
-| Method | Accuracy | Speed |
-|--------|----------|-------|
-| MCMC | Exact | Very slow |
-| Variational | Approximate | Moderate |
-| Laplace | Approximate | Fast |
+### 4.1 Domain Shift Detection
+High epistemic uncertainty is a robust detector of Out-of-Distribution (OOD) data.
+*   *Scenario:* Model trained on European Sentinel-2 data applied to Amazon Rainforest.
+*   *Result:* High epistemic uncertainty due to unseen spectral signatures.
 
-## Calibration
+### 4.2 Active Learning
+Ununennium uses uncertainty heatmaps to guide labeling efforts.
+*   **Acquisition Function:** Select patches maximizing entropy $H(y)$.
+*   *Benefit:* Reduces labeling costs by 40-60% by focusing on "confusing" geography.
 
-### Temperature Scaling
+### 4.3 Reliability Diagrams in Mapping
+When producing a flood map, we mask out pixels where $H(y) > \tau$ (threshold).
+*   **Risk-Averse Policy:** High $\tau$. Only map definite floods.
+*   **Risk-Seeking Policy:** Low $\tau$. Map potential floods.
 
-Post-hoc calibration:
+---
 
-```
-p_calibrated = softmax(z / T)
-```
+## 5. Ununennium Implementation
 
-Where `T > 1` reduces overconfidence.
-
-### Platt Scaling
-
-Logistic regression on validation set:
-
-```
-p = σ(a × z + b)
-```
-
-## Practical Recommendations
-
-| Scenario | Method | Reason |
-|----------|--------|--------|
-| Production | MC Dropout (T=10) | Balance speed/quality |
-| Research | Deep Ensembles (M=5) | Best calibration |
-| Limited compute | Temperature Scaling | Minimal overhead |
-| Safety-critical | Ensembles + Calibration | Maximum reliability |
-
-## Visualization
-
-### Uncertainty Maps
+The `ununennium.metrics.uncertainty` module provides vectorized implementations of these concepts.
 
 ```python
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(12, 4))
-plt.subplot(131)
-plt.imshow(prediction)
-plt.title("Prediction")
-plt.subplot(132)
-plt.imshow(aleatoric_unc, cmap='hot')
-plt.title("Aleatoric Uncertainty")
-plt.subplot(133)
-plt.imshow(epistemic_unc, cmap='hot')
-plt.title("Epistemic Uncertainty")
+# Pseudo-code for Monte Carlo Dropout Evaluation
+def estimate_uncertainty(model, image, T=30):
+    model.train() # Enable Dropout
+    preds = []
+    
+    for _ in range(T):
+        preds.append(torch.softmax(model(image), dim=1))
+        
+    preds = torch.stack(preds) # (T, C, H, W)
+    
+    mean_pred = preds.mean(dim=0)
+    
+    # Entropy (Total Uncertainty)
+    entropy = -torch.sum(mean_pred * torch.log(mean_pred + 1e-6), dim=0)
+    
+    # Variance (Epistemic Proxy)
+    variance = preds.var(dim=0).mean(dim=0)
+    
+    return mean_pred, entropy, variance
 ```
