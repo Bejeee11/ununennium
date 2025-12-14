@@ -32,14 +32,18 @@ def plot_rgb(
     if ax is None:
         _fig, ax = plt.subplots(figsize=(10, 10))
     if ax is None:  # Should be unreachable but satisfies type checker
-         raise RuntimeError("Failed to create axes")
+        raise RuntimeError("Failed to create axes")
 
     if bands is None:
         if sensor:
             bands = get_rgb_bands(sensor)
         else:
             # Default to first 3 bands
-            bands = tuple(tensor.band_names[:3]) if tensor.band_names and len(tensor.band_names) >= 3 else None  # type: ignore
+            bands = (
+                tuple(tensor.band_names[:3])
+                if tensor.band_names and len(tensor.band_names) >= 3
+                else None
+            )  # type: ignore
 
     if bands is None or len(bands) != 3:
         raise ValueError("Must provide 3 bands for RGB plotting.")

@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from ununennium.core.types import Device
 
 
-
 @dataclass
 class GeoTensor:
     """A georeferenced tensor with coordinate reference system awareness.
@@ -176,7 +175,7 @@ class GeoTensor:
         elif isinstance(self.data, np.ndarray):
             data = torch.from_numpy(self.data).to(device)
         else:
-             data = self.data # type: ignore
+            data = self.data  # type: ignore
 
         return GeoTensor(
             data=data,
