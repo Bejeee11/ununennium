@@ -2,22 +2,27 @@
 
 <div align="center">
 
-[![PyPI](https://img.shields.io/pypi/v/ununennium?style=flat-square&color=blue)](https://pypi.org/project/ununennium/)
-[![Python](https://img.shields.io/pypi/pyversions/ununennium?style=flat-square)](https://pypi.org/project/ununennium/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
-[![CI](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
-[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen?style=flat-square)](https://ununennium.readthedocs.io)
-[![codecov](https://img.shields.io/codecov/c/github/olaflaitinen/ununennium?style=flat-square)](https://codecov.io/gh/olaflaitinen/ununennium)
-[![Downloads](https://img.shields.io/pypi/dm/ununennium?style=flat-square)](https://pypi.org/project/ununennium/)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=flat-square)](https://github.com/astral-sh/ruff)
-[![Typed](https://img.shields.io/badge/typing-pyright-blue?style=flat-square)](https://github.com/microsoft/pyright)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.12345678-blue?style=flat-square)](https://zenodo.org)
+[![PyPI Version](https://img.shields.io/pypi/v/ununennium?color=blue)](https://pypi.org/project/ununennium/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/ununennium)](https://pypi.org/project/ununennium/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Downloads](https://img.shields.io/pypi/dm/ununennium)](https://pypi.org/project/ununennium/)
+[![GitHub Repo stars](https://img.shields.io/github/stars/olaflaitinen/ununennium?style=social)](https://github.com/olaflaitinen/ununennium)
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&label=CI)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
+[![Documentation Status](https://readthedocs.org/projects/ununennium/badge/?version=latest)](https://ununennium.readthedocs.io/en/latest/?badge=latest)
+[![Codecov](https://img.shields.io/codecov/c/github/olaflaitinen/ununennium)](https://codecov.io/gh/olaflaitinen/ununennium)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12345678.svg)](https://zenodo.org/badge/latestdoi/10.5281/zenodo.12345678)
+[![Repo Size](https://img.shields.io/github/repo-size/olaflaitinen/ununennium)](https://github.com/olaflaitinen/ununennium)
+[![Last Commit](https://img.shields.io/github/last-commit/olaflaitinen/ununennium)](https://github.com/olaflaitinen/ununennium/commits/main)
 
 **Production-grade Python library for satellite and geospatial imagery machine learning.**
 
-[Documentation](https://ununennium.readthedocs.io) |
-[PyPI](https://pypi.org/project/ununennium/) |
-[GitHub](https://github.com/olaflaitinen/ununennium) |
+[Documentation](https://ununennium.readthedocs.io) •
+[PyPI](https://pypi.org/project/ununennium/) •
+[GitHub](https://github.com/olaflaitinen/ununennium) •
 [Examples](https://github.com/olaflaitinen/ununennium/tree/main/examples)
 
 </div>
@@ -26,7 +31,7 @@
 
 ## Overview
 
-Ununennium (Element 119, the next alkali metal) represents the cutting edge of satellite imagery machine learning. This library provides a unified, GPU-first framework for end-to-end Earth observation workflows—from cloud-native data access through model training to deployment.
+Ununennium (Element 119, the next alkali metal) represents the cutting edge of satellite imagery machine learning. This library provides a unified, GPU-first framework for end-to-end Earth observation workflows, from cloud-native data access through model training to deployment.
 
 ### Why Ununennium?
 
