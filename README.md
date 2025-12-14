@@ -218,11 +218,10 @@ ununennium/
 ## Authors
 
 - **Olaf Yunus Laitinen Imanov** - Lead Developer & Architect
-- **Hafiz Rzazade** - Core Contributor
-- **Laman Mamedova** - Documentation & Testing
-- **Farid Mirzaliyev** - Model Development
-- **Aian Ajili** - Infrastructure & CI/CD
-
+- **Hafiz Rzazade**
+- **Laman Mamedova** 
+- **Farid Mirzaliyev** 
+- **Aian Ajili** 
 ---
 
 ## Citation
