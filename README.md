@@ -230,11 +230,11 @@ ununennium/
 If you use Ununennium in your research, please cite:
 
 ```bibtex
-@software{ununennium2024,
+@software{ununennium2025,
   title = {Ununennium: Production-grade Satellite Imagery Machine Learning},
   author = {Laitinen Imanov, Olaf Yunus and Rzazade, Hafiz and Mamedova, Laman and Mirzaliyev, Farid and Ajili, Ayan},
-  year = {2024},
-  version = {1.0.0},
+  year = {2025},
+  version = {1.0.5},
   url = {https://github.com/olaflaitinen/ununennium}
 }
 ```
