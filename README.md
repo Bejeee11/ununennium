@@ -4,8 +4,9 @@
 
 [![PyPI Version](https://img.shields.io/pypi/v/ununennium?color=blue)](https://pypi.org/project/ununennium/)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/ununennium)](https://pypi.org/project/ununennium/)
+[![PyPI Status](https://img.shields.io/pypi/status/ununennium.svg)](https://pypi.org/project/ununennium/)
+[![Wheel](https://img.shields.io/pypi/wheel/ununennium.svg)](https://pypi.org/project/ununennium/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Downloads](https://img.shields.io/pypi/dm/ununennium)](https://pypi.org/project/ununennium/)
 [![GitHub Repo stars](https://img.shields.io/github/stars/olaflaitinen/ununennium?style=social)](https://github.com/olaflaitinen/ununennium)
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&label=CI)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
