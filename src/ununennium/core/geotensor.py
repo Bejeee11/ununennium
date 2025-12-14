@@ -100,6 +100,7 @@ class GeoTensor:
         """Data type of the underlying tensor."""
         return self.data.dtype
 
+    @property
     def device(self) -> torch.device:
         """Device where the tensor resides."""
         return torch.device(self.data.device)

@@ -218,7 +218,7 @@ class Trainer:
         num_batches = 0
 
         if self.val_loader is None:
-             # Should be unreachable given prior checks
+            # Should be unreachable given prior checks
             return {}
 
         for batch in self.val_loader:

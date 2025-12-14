@@ -52,7 +52,7 @@ class Tiler:
     def tile(
         self,
         image: torch.Tensor | GeoTensor,
-    ) -> Iterator[tuple[torch.Tensor, tuple[int, int, int, int]]]:
+    ) -> Iterator[Any]:
         """Generate tiles from an image.
 
         Args:
@@ -89,7 +89,9 @@ class Tiler:
                     pad_h = th - tile.shape[1]
                     pad_w = tw - tile.shape[2]
                     tile = torch.nn.functional.pad(
-                        tile, (0, pad_w, 0, pad_h), mode=self.padding_mode  # type: ignore
+                        tile,
+                        (0, pad_w, 0, pad_h),
+                        mode=self.padding_mode,  # type: ignore
                     )
 
                 yield tile, (y, x, y_end - y, x_end - x)

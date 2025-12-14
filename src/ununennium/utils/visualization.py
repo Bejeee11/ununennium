@@ -39,7 +39,11 @@ def plot_rgb(
             bands = get_rgb_bands(sensor)
         else:
             # Default to first 3 bands
-            bands = tuple(tensor.band_names[:3]) if tensor.band_names and len(tensor.band_names) >= 3 else None  # type: ignore
+            bands = (
+                tuple(tensor.band_names[:3])
+                if tensor.band_names and len(tensor.band_names) >= 3
+                else None
+            )  # type: ignore
 
     if bands is None:
         raise ValueError("Must provide 3 bands for RGB plotting.")
@@ -92,6 +96,9 @@ def plot_bands(
 
     fig, axes = plt.subplots(rows, cols, figsize=(4 * cols, 4 * rows))
     axes = axes.flatten()
+
+    if bands is None:
+        return fig
 
     for i, band in enumerate(bands):
         idx = tensor.band_names.index(band)
