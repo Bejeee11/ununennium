@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Literal
+from typing import Literal, ClassVar
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class Backbone(ABC, nn.Module):
@@ -48,7 +48,7 @@ class ResNetBackbone(Backbone):
     Supports ResNet-18, 34, 50, 101, and 152 variants.
     """
 
-    CONFIGS = {
+    CONFIGS: ClassVar[dict] = {
         "resnet18": {"layers": [2, 2, 2, 2], "expansion": 1},
         "resnet34": {"layers": [3, 4, 6, 3], "expansion": 1},
         "resnet50": {"layers": [3, 4, 6, 3], "expansion": 4},
@@ -131,7 +131,7 @@ class ResNetBackbone(Backbone):
 
     def _load_pretrained(self) -> None:
         """Load pretrained ImageNet weights."""
-        import torchvision.models as models
+        from torchvision import models  # noqa: PLC0415
 
         pretrained_models = {
             "resnet18": models.resnet18,
@@ -229,9 +229,9 @@ class EfficientNetBackbone(Backbone):
         super().__init__()
 
         try:
-            import timm
-        except ImportError:
-            raise ImportError("timm is required for EfficientNet. Install with: pip install timm")
+            import timm  # noqa: PLC0415  # noqa: PLC0415
+        except ImportError as err:
+            raise ImportError("timm is required for EfficientNet. Install with: pip install timm") from err
 
         self.model = timm.create_model(
             variant,

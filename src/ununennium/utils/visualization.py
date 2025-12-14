@@ -1,21 +1,21 @@
 """Visualization utilities for geospatial data."""
 
 import math
-from typing import Optional, Union, List, Tuple
-import torch
-import numpy as np
+
 import matplotlib.pyplot as plt
+import torch
 from matplotlib.figure import Figure
 
-from ununennium.core import GeoTensor, BandSpec
+from ununennium.core import GeoTensor
 from ununennium.core.band_specs import get_rgb_bands
+
 
 def plot_rgb(
     tensor: GeoTensor,
-    sensor: Optional[str] = None,
-    bands: Optional[Tuple[str, str, str]] = None,
+    sensor: str | None = None,
+    bands: tuple[str, str, str] | None = None,
     brightness: float = 1.0,
-    ax: Optional[plt.Axes] = None,
+    ax: plt.Axes | None = None,
 ) -> plt.Axes:
     """Plot an RGB composite from a GeoTensor.
 
@@ -30,7 +30,7 @@ def plot_rgb(
         Matplotlib axes.
     """
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10, 10))
+        _fig, ax = plt.subplots(figsize=(10, 10))
 
     if bands is None:
         if sensor:
@@ -46,19 +46,19 @@ def plot_rgb(
     try:
         indices = [tensor.band_names.index(b) for b in bands]
     except ValueError as e:
-        raise ValueError(f"Band not found in tensor: {e}")
+        raise ValueError(f"Band not found in tensor: {e}") from e
 
     rgb = tensor.data[indices, :, :].float()
-    
+
     # Normalize
     p2 = torch.quantile(rgb, 0.02)
     p98 = torch.quantile(rgb, 0.98)
     rgb = (rgb - p2) / (p98 - p2)
     rgb = torch.clamp(rgb * brightness, 0, 1)
-    
+
     # To channel last numpy
     rgb_np = rgb.permute(1, 2, 0).cpu().numpy()
-    
+
     ax.imshow(rgb_np)
     ax.set_title(f"RGB Composite ({', '.join(bands)})")
     ax.axis("off")
@@ -66,7 +66,7 @@ def plot_rgb(
 
 def plot_bands(
     tensor: GeoTensor,
-    bands: Optional[List[str]] = None,
+    bands: list[str] | None = None,
     cols: int = 4,
     cmap: str = "viridis",
 ) -> Figure:
@@ -83,26 +83,26 @@ def plot_bands(
     """
     if bands is None:
         bands = tensor.band_names
-        
+
     n = len(bands)
     rows = math.ceil(n / cols)
-    
+
     fig, axes = plt.subplots(rows, cols, figsize=(4*cols, 4*rows))
     axes = axes.flatten()
-    
+
     for i, band in enumerate(bands):
         idx = tensor.band_names.index(band)
         data = tensor.data[idx].float().cpu().numpy()
-        
+
         ax = axes[i]
         im = ax.imshow(data, cmap=cmap)
         ax.set_title(band)
         ax.axis("off")
         plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-        
+
     # Hide empty axes
     for i in range(n, len(axes)):
         axes[i].axis("off")
-        
+
     plt.tight_layout()
     return fig

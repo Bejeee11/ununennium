@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import random
-from typing import Dict
 
 import numpy as np
 import torch
@@ -30,13 +30,11 @@ def set_seed(seed: int, deterministic: bool = True) -> None:
         torch.backends.cudnn.benchmark = False
         os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
-        try:
+        with contextlib.suppress(Exception):
             torch.use_deterministic_algorithms(True)
-        except Exception:
-            pass
 
 
-def get_seed_state() -> Dict[str, bytes]:
+def get_seed_state() -> dict[str, bytes]:
     """Capture current random state for later restoration.
 
     Returns:
@@ -54,7 +52,7 @@ def get_seed_state() -> Dict[str, bytes]:
     return state
 
 
-def restore_seed_state(state: Dict[str, bytes]) -> None:
+def restore_seed_state(state: dict[str, bytes]) -> None:
     """Restore random state from captured state.
 
     Args:

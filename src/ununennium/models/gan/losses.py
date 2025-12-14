@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class AdversarialLoss(nn.Module):
@@ -44,16 +42,13 @@ class AdversarialLoss(nn.Module):
         Returns:
             Loss value.
         """
-        if self.mode == "vanilla":
-            target = torch.ones_like(pred) if target_is_real else torch.zeros_like(pred)
-            return self.loss(pred, target)
-
-        elif self.mode == "lsgan":
+        if self.mode in ("vanilla", "lsgan"):
             target = torch.ones_like(pred) if target_is_real else torch.zeros_like(pred)
             return self.loss(pred, target)
 
         elif self.mode == "wgan":
             return -pred.mean() if target_is_real else pred.mean()
+
 
         elif self.mode == "hinge":
             if for_discriminator:
@@ -72,8 +67,8 @@ class PerceptualLoss(nn.Module):
 
     def __init__(
         self,
-        feature_layers: List[int] | None = None,
-        weights: List[float] | None = None,
+        feature_layers: list[int] | None = None,
+        weights: list[float] | None = None,
     ):
         super().__init__()
 
@@ -83,11 +78,11 @@ class PerceptualLoss(nn.Module):
             weights = [1.0] * len(feature_layers)
 
         try:
-            import torchvision.models as models
+            from torchvision import models  # noqa: PLC0415
             vgg = models.vgg19(weights="IMAGENET1K_V1").features
         except Exception:
             # Fallback: use VGG without pretrained weights
-            import torchvision.models as models
+            from torchvision import models  # noqa: PLC0415
             vgg = models.vgg19().features
 
         self.blocks = nn.ModuleList()
@@ -128,7 +123,7 @@ class PerceptualLoss(nn.Module):
         target = (target - self.std) / self.std
 
         loss = torch.tensor(0.0, device=pred.device)
-        for block, weight in zip(self.blocks, self.weights):
+        for block, weight in zip(self.blocks, self.weights, strict=True):
             pred = block(pred)
             with torch.no_grad():
                 target = block(target)
