@@ -54,6 +54,7 @@ def plot_rgb(
         rgb = data[indices, :, :].float()
     else:
         import numpy as np  # noqa: PLC0415
+
         rgb = torch.from_numpy(np.array(data)[indices, :, :]).float()
 
     # Normalize

@@ -67,6 +67,7 @@ class Tiler:
                 data = image.data
             else:
                 import numpy as np  # noqa: PLC0415
+
                 data = torch.from_numpy(np.asarray(image.data))
         else:
             data = image
