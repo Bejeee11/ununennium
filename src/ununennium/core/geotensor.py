@@ -58,7 +58,7 @@ class GeoTensor:
     data: torch.Tensor | np.ndarray
     crs: CRS | None = None
     transform: Affine | None = None
-    band_names: list[str] | None = None
+    band_names: list[Any] | None = None
     nodata: float | None = None
     timestamp: str | None = None
     _bounds: BoundingBox | None = field(default=None, repr=False)
@@ -100,10 +100,9 @@ class GeoTensor:
         """Data type of the underlying tensor."""
         return self.data.dtype
 
-    @property
     def device(self) -> torch.device:
         """Device where the tensor resides."""
-        return self.data.device
+        return torch.device(self.data.device)
 
     @property
     def height(self) -> int:
@@ -268,7 +267,7 @@ class GeoTensor:
     @overload
     def __getitem__(self, key: tuple[Any, ...]) -> GeoTensor: ...
 
-    def __getitem__(self, key: int | slice | tuple[Any, ...]) -> GeoTensor:
+    def __getitem__(self, key: Any) -> GeoTensor:
         """Index into the tensor.
 
         Note:

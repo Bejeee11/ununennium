@@ -64,7 +64,7 @@ def read_geotiff(
 
         if window is not None:
             row_start, col_start, height, width = window
-            rio_window = Window(col_start, row_start, width, height)
+            rio_window = Window(col_start, row_start, width, height)  # type: ignore
 
         if bounds is not None:
             rio_window = from_bounds(

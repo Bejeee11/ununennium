@@ -158,19 +158,19 @@ def compute_index(
 
     if index_name.lower() == "ndvi":
         result = ndvi(
-            data[..., band_mapping["nir"], :, :],
-            data[..., band_mapping["red"], :, :],
+            data[..., band_mapping["nir"], :, :],  # type: ignore
+            data[..., band_mapping["red"], :, :],  # type: ignore
         )
     elif index_name.lower() == "ndwi":
         result = ndwi(
-            data[..., band_mapping["green"], :, :],
-            data[..., band_mapping["nir"], :, :],
+            data[..., band_mapping["green"], :, :],  # type: ignore
+            data[..., band_mapping["nir"], :, :],  # type: ignore
         )
     elif index_name.lower() == "evi":
         result = evi(
-            data[..., band_mapping["nir"], :, :],
-            data[..., band_mapping["red"], :, :],
-            data[..., band_mapping["blue"], :, :],
+            data[..., band_mapping["nir"], :, :],  # type: ignore
+            data[..., band_mapping["red"], :, :],  # type: ignore
+            data[..., band_mapping["blue"], :, :],  # type: ignore
         )
     else:
         raise ValueError(f"Unknown index: {index_name}")

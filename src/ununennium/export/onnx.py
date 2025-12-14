@@ -32,7 +32,7 @@ def export_onnx(
 
     torch.onnx.export(
         model,
-        dummy_input,
+        (dummy_input,),  # type: ignore
         str(output_path),
         opset_version=opset_version,
         input_names=["input"],

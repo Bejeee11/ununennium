@@ -147,7 +147,7 @@ class BalancedSampler(Sampler):
 
             # Random location for this class
             idx = torch.randint(len(locations), (1,)).item()
-            x, y = locations[idx]
+            x, y = locations[idx]  # type: ignore
 
             # Add jitter
             x += (torch.rand(1).item() - 0.5) * self.sample_size[0] * 0.5

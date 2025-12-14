@@ -41,7 +41,7 @@ class UNet(nn.Module):
             )
         else:
             self.encoder = ResNetBackbone(
-                variant=backbone,
+                variant=backbone,  # type: ignore
                 in_channels=in_channels,
                 pretrained=pretrained and in_channels == 3,
             )

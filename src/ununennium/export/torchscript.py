@@ -32,6 +32,6 @@ def export_torchscript(
 
     scripted = torch.jit.trace(model, dummy_input) if method == "trace" else torch.jit.script(model)
 
-    scripted.save(str(output_path))
+    scripted.save(str(output_path))  # type: ignore
 
     return output_path

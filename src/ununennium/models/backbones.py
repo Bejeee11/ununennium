@@ -242,8 +242,8 @@ class EfficientNetBackbone(Backbone):
             features_only=True,
             out_indices=[1, 2, 3, 4],
         )
-        self._out_channels = self.model.feature_info.channels()
-        self._out_strides = self.model.feature_info.reduction()
+        self._out_channels = self.model.feature_info.channels()  # type: ignore
+        self._out_strides = self.model.feature_info.reduction()  # type: ignore
 
     @property
     def out_channels(self) -> list[int]:

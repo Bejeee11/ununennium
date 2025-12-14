@@ -44,7 +44,7 @@ class AdversarialLoss(nn.Module):
         """
         if self.mode in ("vanilla", "lsgan"):
             target = torch.ones_like(pred) if target_is_real else torch.zeros_like(pred)
-            return self.loss(pred, target)
+            return self.loss(pred, target)  # type: ignore
 
         elif self.mode == "wgan":
             return -pred.mean() if target_is_real else pred.mean()
@@ -116,8 +116,8 @@ class PerceptualLoss(nn.Module):
         pred = (pred + 1) / 2
         target = (target + 1) / 2
 
-        pred = (pred - self.mean) / self.std
-        target = (target - self.std) / self.std
+        pred = (pred - self.mean) / self.std  # type: ignore
+        target = (target - self.std) / self.std  # type: ignore
 
         loss = torch.tensor(0.0, device=pred.device)
         for block, weight in zip(self.blocks, self.weights, strict=True):

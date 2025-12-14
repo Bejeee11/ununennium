@@ -39,13 +39,9 @@ def plot_rgb(
             bands = get_rgb_bands(sensor)
         else:
             # Default to first 3 bands
-            bands = (
-                tuple(tensor.band_names[:3])
-                if tensor.band_names and len(tensor.band_names) >= 3
-                else None
-            )  # type: ignore
+            bands = tuple(tensor.band_names[:3]) if tensor.band_names and len(tensor.band_names) >= 3 else None  # type: ignore
 
-    if bands is None or len(bands) != 3:
+    if bands is None:
         raise ValueError("Must provide 3 bands for RGB plotting.")
 
     # Select indices

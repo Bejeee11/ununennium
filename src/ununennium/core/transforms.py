@@ -63,7 +63,7 @@ def pixel_to_geo(
     Returns:
         Tuple of (x, y) geographic coordinates.
     """
-    x, y = transform * (col, row)
+    x, y = transform * (col, row)  # type: ignore
     return (x, y)
 
 
@@ -83,7 +83,7 @@ def geo_to_pixel(
         Tuple of (col, row) pixel coordinates.
     """
     inv = ~transform
-    col, row = inv * (x, y)
+    col, row = inv * (x, y)  # type: ignore
     return (col, row)
 
 
