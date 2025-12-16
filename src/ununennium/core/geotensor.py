@@ -90,6 +90,15 @@ class GeoTensor:
 
             self.crs = PyprojCRS.from_user_input(self.crs)
 
+        # Convert simple tuple/list transform to Affine
+        if self.transform is not None and isinstance(self.transform, (tuple, list)):
+            from affine import Affine  # noqa: PLC0415
+            
+            # Assuming format: (a, b, c, d, e, f)
+            # x = a*col + b*row + c
+            # y = d*col + e*row + f
+            self.transform = Affine(*self.transform)
+
     @property
     def shape(self) -> tuple[int, ...]:
         """Shape of the underlying data."""

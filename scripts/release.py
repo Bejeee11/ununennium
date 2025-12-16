@@ -56,6 +56,11 @@ def main():
     print("Starting Ununennium Release Process")
     print("=" * 40)
     
+    # Change to project root
+    project_root = Path(__file__).parent.parent
+    os.chdir(project_root)
+    print(f"Working directory: {project_root}")
+    
     try:
         clean()
         verify_structure()
