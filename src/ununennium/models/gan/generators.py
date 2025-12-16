@@ -36,7 +36,9 @@ class UNetGenerator(nn.Module):
         for i in range(num_downs):
             out_ch = min(base_channels * (2**i), 512)
             self.encoders.append(
-                self._encoder_block(in_ch, out_ch, normalize=(i > 0), norm_type=norm_type)
+                self._encoder_block(
+                    in_ch, out_ch, normalize=(i > 0 and i < num_downs - 1), norm_type=norm_type
+                )
             )
             in_ch = out_ch
 

@@ -34,6 +34,7 @@ class Pix2Pix(nn.Module):
         base_channels: int = 64,
         lambda_l1: float = 100.0,
         adversarial_mode: str = "lsgan",
+        norm_type: str = "instance",
     ):
         super().__init__()
 
@@ -41,6 +42,7 @@ class Pix2Pix(nn.Module):
             in_channels=in_channels,
             out_channels=out_channels,
             base_channels=base_channels,
+            norm_type=norm_type,
         )
         self.discriminator = PatchDiscriminator(
             in_channels=in_channels + out_channels,

@@ -52,6 +52,10 @@ geo = [
     "pyproj>=3.5.0",
     "shapely>=2.0.0",
 ]
+export = [
+    "onnx>=1.14.0",
+    "onnxscript>=0.1.0",
+]
 stac = [
     "pystac>=1.8.0",
     "pystac-client>=0.7.0",
@@ -96,7 +100,7 @@ docs = [
     "mkdocs-literate-nav>=0.6.0",
 ]
 all = [
-    "ununennium[geo,stac,zarr,ml,training,dev,docs]",
+    "ununennium[geo,export,stac,zarr,ml,training,dev,docs]",
 ]
 
 [project.scripts]

@@ -31,6 +31,7 @@ class CycleGAN(nn.Module):
         self,
         in_channels_a: int = 3,
         in_channels_b: int = 3,
+        in_channels: int | None = None,
         base_channels: int = 64,
         num_res_blocks: int = 9,
         lambda_cycle: float = 10.0,
@@ -38,9 +39,17 @@ class CycleGAN(nn.Module):
     ):
         super().__init__()
 
+        if in_channels is not None:
+            in_channels_a = in_channels
+            in_channels_b = in_channels
+
         # Generators
         self.G_A2B = ResNetGenerator(in_channels_a, in_channels_b, base_channels, num_res_blocks)
         self.G_B2A = ResNetGenerator(in_channels_b, in_channels_a, base_channels, num_res_blocks)
+
+        # Aliases for compatibility
+        self.G_AB = self.G_A2B
+        self.G_BA = self.G_B2A
 
         # Discriminators
         self.D_A = PatchDiscriminator(in_channels_a, base_channels)
