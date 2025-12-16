@@ -1,97 +1,26 @@
 # Reproducibility
 
-This guide covers practices for reproducible geospatial ML experiments.
+Ensuring consistent results across runs.
 
----
+## Seeding
 
-## Random Seeds
-
-### Setting Seeds
+Set seeds for all libraries.
 
 ```python
-import torch
-import numpy as np
-import random
+from ununennium.utils import seed_everything
 
-def set_seed(seed: int = 42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    
-    # Deterministic operations
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+seed_everything(42)
+# Sets Python, NumPy, PyTorch, CUDA seeds
 ```
 
-### Per-Experiment Seeds
+## Deterministic Algorithms
 
-```yaml
-experiment:
-  seed: 42
-  data_seed: 123
-  model_seed: 456
-```
-
----
-
-## Configuration Management
-
-### YAML Configuration
-
-```yaml
-model:
-  name: unet_resnet50
-  in_channels: 12
-  num_classes: 10
-
-training:
-  epochs: 100
-  batch_size: 16
-  learning_rate: 1e-4
-
-data:
-  tile_size: 256
-  overlap: 0.25
-```
-
-### Logging Configuration
+Enable deterministic CUDA operations (slower but reproducible).
 
 ```python
-from ununennium.utils import save_config
-
-save_config(config, "experiment_001/config.yaml")
+torch.use_deterministic_algorithms(True)
 ```
 
----
+## Hardware Consistency
 
-## Checkpointing
-
-```python
-from ununennium.training import CheckpointCallback
-
-callback = CheckpointCallback(
-    path="checkpoints/",
-    save_optimizer=True,
-    save_config=True,
-)
-```
-
----
-
-## Version Tracking
-
-```python
-import ununennium
-
-print(f"ununennium: {ununennium.__version__}")
-print(f"torch: {torch.__version__}")
-print(f"numpy: {np.__version__}")
-```
-
----
-
-## See Also
-
-- [Configuration Guide](configuration.md)
-- [CONTRIBUTING.md](../../CONTRIBUTING.md)
+Results may still vary slightly between different GPU architectures (e.g., A100 vs V100) due to floating point accumulation order.

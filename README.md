@@ -2,13 +2,40 @@
 
 <div align="center">
 
-[![PyPI Version](https://img.shields.io/pypi/v/ununennium?color=blue)](https://pypi.org/project/ununennium/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/ununennium)](https://pypi.org/project/ununennium/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&label=CI)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
-[![Documentation](https://img.shields.io/badge/docs-available-blue)](https://github.com/olaflaitinen/ununennium/tree/main/docs)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+<!-- Package & Version -->
+[![PyPI Version](https://img.shields.io/pypi/v/ununennium?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/ununennium/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/ununennium?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/ununennium/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/ununennium?logo=python&logoColor=white)](https://pypi.org/project/ununennium/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/ununennium?logo=anaconda&logoColor=white)](https://anaconda.org/conda-forge/ununennium)
+
+<!-- CI/CD Status -->
+[![CI Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&label=CI&logo=github)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
+[![Docs Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/docs.yml?branch=main&label=docs&logo=github)](https://github.com/olaflaitinen/ununennium/actions/workflows/docs.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/release.yml?label=release&logo=github)](https://github.com/olaflaitinen/ununennium/actions/workflows/release.yml)
+[![codecov](https://img.shields.io/codecov/c/github/olaflaitinen/ununennium?logo=codecov&logoColor=white)](https://codecov.io/gh/olaflaitinen/ununennium)
+
+<!-- Code Quality -->
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
+[![Checked with pyright](https://img.shields.io/badge/pyright-checked-blue?logo=python&logoColor=white)](https://microsoft.github.io/pyright/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
+[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg?logo=python&logoColor=white)](https://github.com/PyCQA/bandit)
+
+<!-- Platform & Compatibility -->
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![CUDA](https://img.shields.io/badge/CUDA-11.8%2B-76B900?logo=nvidia&logoColor=white)](https://developer.nvidia.com/cuda-toolkit)
+[![Platform](https://img.shields.io/badge/platform-linux%20|%20windows%20|%20macos-lightgrey?logo=linux&logoColor=white)](https://github.com/olaflaitinen/ununennium)
+
+<!-- Documentation & Community -->
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue?logo=materialformkdocs&logoColor=white)](https://olaflaitinen.github.io/ununennium)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?logo=apache&logoColor=white)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Stars](https://img.shields.io/github/stars/olaflaitinen/ununennium?style=flat&logo=github)](https://github.com/olaflaitinen/ununennium/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/olaflaitinen/ununennium?logo=github)](https://github.com/olaflaitinen/ununennium/issues)
+[![GitHub PRs](https://img.shields.io/github/issues-pr/olaflaitinen/ununennium?logo=github)](https://github.com/olaflaitinen/ununennium/pulls)
+
+<!-- Versioning & Maintenance -->
+[![Semantic Versioning](https://img.shields.io/badge/semver-2.0.0-blue?logo=semver&logoColor=white)](https://semver.org/)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+[![Last Commit](https://img.shields.io/github/last-commit/olaflaitinen/ununennium?logo=github)](https://github.com/olaflaitinen/ununennium/commits/main)
 
 **Production-grade Python library for satellite and geospatial imagery machine learning.**
 
@@ -18,6 +45,7 @@
 [Examples](examples/)
 
 </div>
+
 
 ---
 
@@ -69,29 +97,29 @@ Ununennium treats geospatial machine learning with rigorous mathematical foundat
 
 The Normalized Difference Vegetation Index (NDVI) is computed as:
 
-$$
+```math
 \text{NDVI} = \frac{\rho_{\text{NIR}} - \rho_{\text{Red}}}{\rho_{\text{NIR}} + \rho_{\text{Red}}}
-$$
+```
 
-where $\rho$ denotes surface reflectance in the respective spectral band.
+where ρ denotes surface reflectance in the respective spectral band.
 
 ### Segmentation Metrics
 
 Intersection over Union with proper handling of spatial autocorrelation:
 
-$$
+```math
 \text{IoU} = \frac{|P \cap G|}{|P \cup G|} = \frac{\text{TP}}{\text{TP} + \text{FP} + \text{FN}}
-$$
+```
 
 ### Physics-Informed Loss
 
 Combined data fidelity with PDE residual constraints:
 
-$$
+```math
 \mathcal{L}_{\text{PINN}} = \underbrace{\frac{1}{N_d}\sum_{i=1}^{N_d}\|u(x_i) - u_i^{\text{obs}}\|^2}_{\text{Data Loss}} + \lambda \underbrace{\frac{1}{N_c}\sum_{j=1}^{N_c}\|\mathcal{N}[u](x_j)\|^2}_{\text{PDE Residual}}
-$$
+```
 
-where $\mathcal{N}$ is the differential operator defining the governing equation.
+where N is the differential operator defining the governing equation.
 
 ---
 
