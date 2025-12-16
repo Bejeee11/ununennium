@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- GitHub-compatible math formula rendering in documentation
+- Conda package recipe and submission guide
+- Comprehensive badge set in README
+
+### Changed
+- Updated bibliography with valid data
+
+---
+
+## [1.0.6] - 2025-12-16
+
+### Added
 - Documentation rebuild with comprehensive API reference
 - Link checker script for CI validation
 - Synthetic image generation for documentation assets
@@ -134,7 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/olaflaitinen/ununennium/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/olaflaitinen/ununennium/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/olaflaitinen/ununennium/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/olaflaitinen/ununennium/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/olaflaitinen/ununennium/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/olaflaitinen/ununennium/compare/v1.0.2...v1.0.3
