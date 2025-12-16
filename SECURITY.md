@@ -2,42 +2,94 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+The following versions of Ununennium are currently receiving security updates:
+
+| Version | Supported |
+|---------|-----------|
+| 1.0.x   | Yes |
+| 0.x.x   | No |
+
+---
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please report it privately:
+We take security vulnerabilities seriously. If you discover a security issue, please follow these guidelines:
 
-1. **Do NOT** open a public GitHub issue
-2. Email the maintainers or use GitHub's private security reporting
-3. Include:
+### Do Not
+
+- Do not open a public GitHub issue for security vulnerabilities
+- Do not disclose the vulnerability publicly before it has been addressed
+- Do not exploit vulnerabilities beyond what is necessary to demonstrate them
+
+### Reporting Process
+
+1. **Email**: Send a detailed report to the project maintainers via GitHub private vulnerability reporting
+
+2. **Include in your report**:
    - Description of the vulnerability
    - Steps to reproduce
-   - Potential impact
+   - Potential impact assessment
    - Suggested fix (if any)
 
-## Response Timeline
+3. **Response timeline**:
+   - Acknowledgment: Within 48 hours
+   - Initial assessment: Within 7 days
+   - Resolution target: Within 30 days (depending on severity)
 
-- Initial response: within 48 hours
-- Status update: within 7 days
-- Fix timeline: depends on severity
+---
 
-## Disclosure Policy
+## Security Considerations
 
-We follow coordinated disclosure. We will:
-- Acknowledge receipt of your report
-- Work with you to understand the issue
-- Develop and test a fix
-- Release the fix before public disclosure
-- Credit reporters (unless anonymity is requested)
+### Data Handling
+
+Ununennium processes geospatial imagery data. Users should be aware of:
+
+| Consideration | Description |
+|---------------|-------------|
+| **Data Privacy** | Satellite imagery may contain sensitive location information |
+| **Model Outputs** | Predictions may reveal information about geographic areas |
+| **API Keys** | Some data sources require API authentication |
+
+### Dependency Security
+
+We regularly audit dependencies for vulnerabilities:
+
+```bash
+# Check for vulnerabilities in dependencies
+pip-audit
+
+# Update dependencies
+pip install --upgrade ununennium
+```
+
+### Model Security
+
+When using pretrained models:
+
+- Verify model sources before downloading
+- Use provided checksum verification when available
+- Be cautious with models from untrusted sources
+
+---
 
 ## Security Best Practices
 
-When using Ununennium:
-- Keep dependencies updated
-- Validate input data sources
-- Use secure authentication for cloud storage
-- Review model cards for bias considerations
+### For Users
+
+1. **Keep updated**: Always use the latest version
+2. **Validate inputs**: Sanitize file paths and user inputs
+3. **Secure credentials**: Use environment variables for API keys
+4. **Audit data**: Review data sources for licensing and privacy
+
+### For Contributors
+
+1. **No secrets in code**: Never commit API keys, passwords, or tokens
+2. **Input validation**: Validate all external inputs
+3. **Dependency review**: Audit new dependencies before adding
+4. **Security testing**: Consider security implications of changes
+
+---
+
+## Acknowledgments
+
+We thank security researchers who responsibly disclose vulnerabilities. Contributors will be acknowledged in release notes (with permission).

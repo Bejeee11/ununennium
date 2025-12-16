@@ -1,122 +1,251 @@
-# API Reference: Evaluation
+# Evaluation API
 
-Tools for model evaluation with proper spatial validation methodology.
-
----
-
-## Spatial Validation
-
-### SpatialKFold
-
-K-Fold cross-validation with spatial blocking to prevent data leakage.
-
-```python
-from ununennium.evaluation import SpatialKFold
-
-splitter = SpatialKFold(
-    n_splits=5,
-    block_size=1000,  # meters
-    buffer_distance=500,  # buffer between folds
-)
-
-for train_idx, val_idx in splitter.split(dataset):
-    train_subset = Subset(dataset, train_idx)
-    val_subset = Subset(dataset, val_idx)
-    # Train and evaluate
-```
-
-### BufferedSplit
-
-Create train/val/test splits with spatial buffers.
-
-```python
-from ununennium.evaluation import BufferedSplit
-
-splitter = BufferedSplit(
-    train_ratio=0.7,
-    val_ratio=0.15,
-    test_ratio=0.15,
-    buffer_distance=1000,
-)
-
-train_idx, val_idx, test_idx = splitter.split(dataset)
-```
+The evaluation module provides metrics for model assessment and calibration analysis.
 
 ---
 
-## Metrics Aggregation
+## Segmentation Metrics
+
+### IoU (Intersection over Union)
+
+```python
+class IoU(Metric):
+    """Intersection over Union metric.
+    
+    Parameters
+    ----------
+    num_classes : int
+        Number of classes.
+    ignore_index : int | None, optional
+        Class index to ignore. Default: None.
+    average : str, optional
+        Averaging mode: "micro", "macro", "weighted". Default: "macro".
+    """
+```
+
+$$
+\text{IoU}_c = \frac{\text{TP}_c}{\text{TP}_c + \text{FP}_c + \text{FN}_c}
+$$
+
+### Dice Coefficient
+
+```python
+class Dice(Metric):
+    """Dice coefficient (F1 score).
+    
+    Parameters
+    ----------
+    num_classes : int
+        Number of classes.
+    smooth : float, optional
+        Smoothing factor. Default: 1e-6.
+    """
+```
+
+$$
+\text{Dice}_c = \frac{2 \cdot \text{TP}_c}{2 \cdot \text{TP}_c + \text{FP}_c + \text{FN}_c}
+$$
+
+### Example
+
+```python
+from ununennium.metrics import IoU, Dice
+
+iou = IoU(num_classes=10)
+dice = Dice(num_classes=10)
+
+# Update with predictions
+iou.update(predictions, targets)
+dice.update(predictions, targets)
+
+# Compute final metrics
+print(f"mIoU: {iou.compute():.4f}")
+print(f"mDice: {dice.compute():.4f}")
+```
+
+---
+
+## Classification Metrics
+
+### Accuracy
+
+```python
+class Accuracy(Metric):
+    """Classification accuracy.
+    
+    Parameters
+    ----------
+    task : str
+        Task type: "binary", "multiclass", "multilabel".
+    num_classes : int | None, optional
+        Number of classes (required for multiclass).
+    """
+```
+
+### F1Score
+
+```python
+class F1Score(Metric):
+    """F1 score.
+    
+    Parameters
+    ----------
+    num_classes : int
+        Number of classes.
+    average : str, optional
+        Averaging: "micro", "macro", "weighted". Default: "macro".
+    """
+```
+
+---
+
+## Calibration Metrics
+
+### Expected Calibration Error (ECE)
+
+```python
+class ECE(Metric):
+    """Expected Calibration Error.
+    
+    Parameters
+    ----------
+    n_bins : int, optional
+        Number of confidence bins. Default: 15.
+    """
+```
+
+$$
+\text{ECE} = \sum_{m=1}^{M} \frac{|B_m|}{n} \left| \text{acc}(B_m) - \text{conf}(B_m) \right|
+$$
+
+where $B_m$ is the set of samples in bin $m$.
+
+### Brier Score
+
+```python
+class BrierScore(Metric):
+    """Brier score for probabilistic predictions.
+    
+    Parameters
+    ----------
+    num_classes : int
+        Number of classes.
+    """
+```
+
+$$
+\text{Brier} = \frac{1}{n} \sum_{i=1}^{n} \sum_{c=1}^{C} (p_{ic} - y_{ic})^2
+$$
+
+### Example
+
+```python
+from ununennium.metrics import ECE, BrierScore
+
+ece = ECE(n_bins=15)
+brier = BrierScore(num_classes=10)
+
+# probabilities: (N, C) - class probabilities
+# targets: (N,) - ground truth class indices
+ece.update(probabilities, targets)
+brier.update(probabilities, targets)
+
+print(f"ECE: {ece.compute():.4f}")
+print(f"Brier: {brier.compute():.4f}")
+```
+
+---
+
+## Detection Metrics
+
+### Mean Average Precision (mAP)
+
+```python
+class MeanAP(Metric):
+    """Mean Average Precision.
+    
+    Parameters
+    ----------
+    iou_thresholds : list[float], optional
+        IoU thresholds. Default: [0.5, 0.75].
+    """
+```
+
+---
+
+## Change Detection Metrics
+
+### Kappa Coefficient
+
+```python
+class KappaCoefficient(Metric):
+    """Cohen's Kappa for change detection.
+    
+    Parameters
+    ----------
+    num_classes : int
+        Number of classes (including no-change).
+    """
+```
+
+$$
+\kappa = \frac{p_o - p_e}{1 - p_e}
+$$
+
+where $p_o$ is observed agreement and $p_e$ is expected agreement.
+
+---
+
+## Super-Resolution Metrics
+
+### PSNR
+
+```python
+class PSNR(Metric):
+    """Peak Signal-to-Noise Ratio."""
+```
+
+$$
+\text{PSNR} = 10 \cdot \log_{10}\left(\frac{\text{MAX}^2}{\text{MSE}}\right)
+$$
+
+### SSIM
+
+```python
+class SSIM(Metric):
+    """Structural Similarity Index."""
+```
+
+---
+
+## Metric Aggregation
 
 ### MetricCollection
 
-Compute multiple metrics in a single pass.
-
 ```python
-from ununennium.evaluation import MetricCollection
-from ununennium.metrics import IoU, DiceCoefficient, PixelAccuracy
+from ununennium.metrics import MetricCollection, IoU, Dice
 
 metrics = MetricCollection([
     IoU(num_classes=10),
-    DiceCoefficient(num_classes=10),
-    PixelAccuracy(),
+    Dice(num_classes=10),
 ])
 
-# Update with batches
-for pred, target in zip(predictions, targets):
-    metrics.update(pred, target)
+# Update all metrics at once
+metrics.update(predictions, targets)
 
 # Compute all metrics
 results = metrics.compute()
-# {"IoU": tensor, "Dice": tensor, "PixelAccuracy": float}
+# {"IoU": 0.78, "Dice": 0.85}
 ```
 
 ---
 
-## Benchmark Suite
-
-### run_benchmark
-
-Comprehensive model benchmarking.
+## Bootstrap Confidence Intervals
 
 ```python
-from ununennium.evaluation import run_benchmark
+from ununennium.metrics import bootstrap_ci
 
-results = run_benchmark(
-    model=model,
-    test_loader=test_loader,
-    metrics=["mIoU", "Dice", "PixelAccuracy"],
-    device="cuda",
-    num_runs=3,  # For timing stability
-)
-
-print(f"mIoU: {results['mIoU']:.4f}")
-print(f"Throughput: {results['throughput']:.1f} img/s")
-print(f"Memory: {results['memory_mb']:.1f} MB")
+# Compute 95% confidence interval
+mean, (low, high) = bootstrap_ci(iou, n_bootstrap=1000, confidence=0.95)
+print(f"mIoU: {mean:.4f} [{low:.4f}, {high:.4f}]")
 ```
-
----
-
-## Reporting
-
-### generate_report
-
-Create evaluation reports with visualizations.
-
-```python
-from ununennium.evaluation import generate_report
-
-report = generate_report(
-    model=model,
-    test_loader=test_loader,
-    class_names=["Water", "Forest", "Urban"],
-    output_dir="reports/",
-    include_confusion_matrix=True,
-    include_per_class_metrics=True,
-    include_sample_predictions=10,
-)
-```
-
----
-
-## API Reference
-
-::: ununennium.evaluation

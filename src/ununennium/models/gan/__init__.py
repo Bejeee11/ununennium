@@ -5,6 +5,7 @@ from ununennium.models.gan.discriminators import (
     MultiScaleDiscriminator,
     PatchDiscriminator,
 )
+from ununennium.models.gan.esrgan import ESRGAN, ESRGANGenerator, ESRGANDiscriminator
 from ununennium.models.gan.generators import (
     ResNetGenerator,
     UNetGenerator,
@@ -19,6 +20,9 @@ from ununennium.models.gan.pix2pix import Pix2Pix
 __all__ = [
     "AdversarialLoss",
     "CycleGAN",
+    "ESRGAN",
+    "ESRGANDiscriminator",
+    "ESRGANGenerator",
     "MultiScaleDiscriminator",
     "PatchDiscriminator",
     "PerceptualLoss",
@@ -27,3 +31,4 @@ __all__ = [
     "SpectralAngleLoss",
     "UNetGenerator",
 ]
+

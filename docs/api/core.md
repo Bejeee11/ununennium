@@ -1,99 +1,284 @@
-# Core Module API Reference
+# Core API
 
-The `nunennium.core` module establishes the fundamental data structures for geospatial deep learning. It enforces coordinate reference system (CRS) awareness and bounds tracking throughout the tensor lifecycle.
+The core module provides foundational data structures for geospatial machine learning.
 
-## 1. GeoTensor
+---
 
-**`ununennium.core.geotensor.GeoTensor`**
+## GeoTensor
 
-A subclass of `torch.Tensor` that carries geospatial metadata. It behaves exactly like a standard PyTorch tensor but persists metadata through operations.
+CRS-aware tensor that preserves geospatial metadata through operations.
 
-### Signature
+### Class Definition
 
 ```python
-class GeoTensor(torch.Tensor):
-    def __new__(cls, 
-                data: ArrayLike, 
-                crs: str | CRS, 
-                transform: Affine, 
-                bounds: Bounds | None = None) -> GeoTensor
+class GeoTensor:
+    """A PyTorch tensor with geospatial metadata.
+    
+    Parameters
+    ----------
+    data : torch.Tensor
+        The underlying tensor data. Shape: (C, H, W) or (H, W).
+    crs : str | CRS
+        Coordinate Reference System (e.g., "EPSG:32632").
+    transform : Affine
+        Affine transform from pixel to world coordinates.
+    nodata : float | None, optional
+        Value representing no data. Default: None.
+    
+    Attributes
+    ----------
+    shape : tuple[int, ...]
+        Tensor shape.
+    bounds : BoundingBox
+        Geographic extent.
+    resolution : tuple[float, float]
+        Pixel size in CRS units (x, y).
+    dtype : torch.dtype
+        Data type.
+    device : torch.device
+        Device location.
+    """
 ```
 
-### Attributes
+### Constructor
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `crs` | `pyproj.CRS` | The Coordinate Reference System of the data. |
-| `transform` | `affine.Affine` | The affine transformation matrix mapping pixel coordinates to map coordinates. |
-| `bounds` | `BoundingBox` | The spatial extent (left, bottom, right, top). |
-| `resolution` | `tuple[float, float]` | Pixel resolution $(dx, dy)$ derived from transform. |
+```python
+from ununennium.core import GeoTensor
+from affine import Affine
+import torch
+
+data = torch.randn(12, 512, 512)
+transform = Affine.translation(500000, 4500000) * Affine.scale(10, -10)
+
+tensor = GeoTensor(
+    data=data,
+    crs="EPSG:32632",
+    transform=transform,
+    nodata=-9999.0,
+)
+```
 
 ### Methods
 
-#### `reproject`
+#### `to(device)`
 
-Reprojects the tensor to a new CRS.
+Move tensor to specified device.
 
 ```python
-def reproject(self, dst_crs: str, resampling: Resampling = Resampling.bilinear) -> GeoTensor
+gpu_tensor = tensor.to("cuda:0")
+cpu_tensor = tensor.to("cpu")
 ```
 
-*   **dst_crs**: Target EPSG code or WKT.
-*   **resampling**: Interpolation kernel (see Resampling Theory).
-*   **Returns**: New `GeoTensor` in target CRS.
-*   **Raises**: `CRSError` if transformation is invalid.
+#### `numpy()`
 
-#### `crop`
-
-Spatial crop based on world coordinates.
+Convert to NumPy array.
 
 ```python
-def crop(self, bbox: BoundingBox) -> GeoTensor
+array = tensor.numpy()  # Returns np.ndarray
+```
+
+#### `reproject(target_crs, resolution=None, method="bilinear")`
+
+Reproject to different CRS.
+
+```python
+wgs84 = tensor.reproject(
+    target_crs="EPSG:4326",
+    resolution=(0.0001, 0.0001),
+    method="bilinear",
+)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `target_crs` | `str` | Target CRS identifier |
+| `resolution` | `tuple[float, float]` | Output resolution |
+| `method` | `str` | Resampling method |
+
+#### `crop(bounds)`
+
+Crop to bounding box.
+
+```python
+from ununennium.core import BoundingBox
+
+bounds = BoundingBox(502000, 4496000, 504000, 4498000)
+cropped = tensor.crop(bounds)
+```
+
+#### `resample(resolution, method="bilinear")`
+
+Resample to new resolution.
+
+```python
+resampled = tensor.resample(
+    resolution=(20.0, 20.0),
+    method="cubic",
+)
 ```
 
 ---
 
-## 2. GeoBatch
+## GeoBatch
 
-**`ununennium.core.geobatch.GeoBatch`**
+Batch container for training with consistent metadata.
 
-A container for a batch of `GeoTensor`s, ensuring that a batch collated from different locations maintains spatial context.
-
-### Signature
+### Class Definition
 
 ```python
-@dataclass
 class GeoBatch:
-    images: torch.Tensor
-    masks: torch.Tensor | None
-    metadatas: list[dict]
+    """A batch of samples for training.
+    
+    Parameters
+    ----------
+    images : torch.Tensor
+        Image batch. Shape: (B, C, H, W).
+    masks : torch.Tensor | None, optional
+        Label batch. Shape: (B, H, W) or (B, C, H, W).
+    crs : str | CRS
+        Common CRS for all samples.
+    transforms : list[Affine] | None, optional
+        Per-sample transforms.
+    
+    Attributes
+    ----------
+    batch_size : int
+        Number of samples.
+    device : torch.device
+        Device location.
+    """
 ```
 
-### Usage Pattern
+### Constructor
 
 ```python
-# In a DataLoader collation function
-def collate_fn(batch):
-    images = torch.stack([x["image"] for x in batch])
-    metas = [x["metadata"] for x in batch]
-    return GeoBatch(images=images, metadatas=metas)
+from ununennium.core import GeoBatch
+import torch
+
+batch = GeoBatch(
+    images=torch.randn(8, 12, 256, 256),
+    masks=torch.randint(0, 10, (8, 256, 256)),
+    crs="EPSG:32632",
+)
+```
+
+### Methods
+
+#### `to(device)`
+
+```python
+gpu_batch = batch.to("cuda:0")
+```
+
+#### `pin_memory()`
+
+Pin memory for faster GPU transfer.
+
+```python
+pinned = batch.pin_memory()
 ```
 
 ---
 
-## 3. Coordinate Reference Systems (CRS)
+## BoundingBox
 
-**`ununennium.core.crs.CRS`**
+Geographic extent container.
 
-Wrapper around `pyproj.CRS` providing helper methods for deep learning compatibility.
+### Class Definition
 
-*   `is_geographic`: Checks if units are degrees.
-*   `is_projected`: Checks if units are meters.
-*   `to_wkt()`: Returns Well-Known Text representation.
-*   `to_epsg()`: Returns EPSG code integer.
+```python
+class BoundingBox:
+    """Axis-aligned bounding box in CRS coordinates.
+    
+    Parameters
+    ----------
+    left : float
+        Minimum x coordinate.
+    bottom : float
+        Minimum y coordinate.
+    right : float
+        Maximum x coordinate.
+    top : float
+        Maximum y coordinate.
+    """
+```
 
-### Best Practices
+### Properties
 
-> [!IMPORTANT]
-> **Always use Projected CRS for Training.**
-> Convolutional kernels assume Euclidean distance. Training on Lat/Lon (degrees) grids causes spatial distortion variance as latitude changes. Ununennium will emit a warning if you train on a Geographic CRS.
+| Property | Type | Description |
+|----------|------|-------------|
+| `width` | `float` | `right - left` |
+| `height` | `float` | `top - bottom` |
+| `center` | `tuple[float, float]` | Center point |
+
+### Methods
+
+#### `intersects(other)`
+
+Check if bounding boxes overlap.
+
+```python
+if bbox1.intersects(bbox2):
+    print("Boxes overlap")
+```
+
+#### `intersection(other)`
+
+Compute intersection.
+
+```python
+overlap = bbox1.intersection(bbox2)
+```
+
+#### `union(other)`
+
+Compute union.
+
+```python
+combined = bbox1.union(bbox2)
+```
+
+#### `buffer(distance)`
+
+Expand by distance.
+
+```python
+expanded = bbox.buffer(100)  # 100 CRS units
+```
+
+---
+
+## Type Definitions
+
+```python
+from ununennium.core.types import (
+    CRS,              # Union[str, pyproj.CRS]
+    Transform,        # affine.Affine
+    Resolution,       # tuple[float, float]
+    Shape,            # tuple[int, ...]
+)
+```
+
+---
+
+## Exceptions
+
+```python
+from ununennium.core.exceptions import (
+    CRSError,         # Invalid CRS
+    BoundsError,      # Invalid bounds
+    TransformError,   # Invalid transform
+)
+```
+
+### Example Error Handling
+
+```python
+from ununennium.core import GeoTensor
+from ununennium.core.exceptions import CRSError
+
+try:
+    tensor = GeoTensor(data, crs="INVALID")
+except CRSError as e:
+    print(f"CRS error: {e}")
+```

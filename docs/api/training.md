@@ -1,106 +1,254 @@
-# Training Module API Reference
+# Training API
 
-The `ununennium.training` module implements a highly customizable, PyTorch-native training loop geared towards Earth Observation tasks. It supports mixed precision, gradient accumulation, and callbacks.
+The training module provides a flexible trainer with callbacks and distributed training support.
 
-## 1. Trainer
+---
 
-**`ununennium.training.trainer.Trainer`**
+## Trainer
 
-The orchestrator of the training process.
+Main training loop abstraction.
 
-### Signature
+### Class Definition
 
 ```python
 class Trainer:
-    def __init__(
-        self,
-        model: nn.Module,
-        optimizer: torch.optim.Optimizer,
-        loss_fn: Callable[[Tensor, Tensor], Tensor],
-        train_loader: DataLoader,
-        val_loader: DataLoader | None = None,
-        scheduler: LRScheduler | None = None,
-        callbacks: list[Callback] | None = None,
-        config: TrainerConfig | None = None
-    )
+    """Training loop manager.
+    
+    Parameters
+    ----------
+    model : nn.Module
+        Model to train.
+    optimizer : Optimizer
+        PyTorch optimizer.
+    loss_fn : nn.Module | Callable
+        Loss function.
+    train_loader : DataLoader
+        Training data loader.
+    val_loader : DataLoader | None, optional
+        Validation data loader.
+    callbacks : list[Callback] | None, optional
+        Training callbacks.
+    mixed_precision : bool, optional
+        Enable AMP. Default: False.
+    gradient_accumulation_steps : int, optional
+        Accumulation steps. Default: 1.
+    gradient_clip_norm : float | None, optional
+        Gradient clipping norm.
+    distributed : bool, optional
+        Enable DDP. Default: False.
+    device : str | torch.device, optional
+        Training device. Default: auto-detect.
+    """
 ```
-
-### Configuration (`TrainerConfig`)
-
-| Field | Default | Description |
-|-------|---------|-------------|
-| `epochs` | `100` | Max training epochs. |
-| `device` | `'cuda'` | Computation device. |
-| `mixed_precision` | `True` | Enable FP16 (AMP) for 2x speedup. |
-| `accumulation_steps` | `1` | Gradient accumulation for large batch simulation. |
-| `gradient_clip` | `1.0` | Max norm for gradient clipping. |
 
 ### Methods
 
 #### `fit`
 
-Starts the training loop.
-
 ```python
-def fit(self, epochs: int | None = None) -> dict[str, list[float]]
+def fit(
+    self,
+    epochs: int,
+    start_epoch: int = 0,
+) -> dict[str, list[float]]:
+    """Train the model.
+    
+    Parameters
+    ----------
+    epochs : int
+        Number of epochs to train.
+    start_epoch : int, optional
+        Starting epoch (for resumption). Default: 0.
+    
+    Returns
+    -------
+    dict[str, list[float]]
+        Training history with metrics.
+    """
 ```
 
-**Returns:**
-A dictionary containing the history of all logged metrics (e.g., `train_loss`, `val_IoU`).
+#### `validate`
+
+```python
+def validate(self) -> dict[str, float]:
+    """Run validation loop.
+    
+    Returns
+    -------
+    dict[str, float]
+        Validation metrics.
+    """
+```
+
+### Example
+
+```python
+from ununennium.training import Trainer, CheckpointCallback
+from ununennium.models import create_model
+from ununennium.losses import DiceLoss
+import torch
+
+model = create_model("unet_resnet50", in_channels=12, num_classes=10)
+
+trainer = Trainer(
+    model=model,
+    optimizer=torch.optim.AdamW(model.parameters(), lr=1e-4),
+    loss_fn=DiceLoss(),
+    train_loader=train_loader,
+    val_loader=val_loader,
+    callbacks=[
+        CheckpointCallback("checkpoints/", monitor="val_iou"),
+    ],
+    mixed_precision=True,
+    gradient_accumulation_steps=4,
+)
+
+history = trainer.fit(epochs=100)
+```
 
 ---
 
-## 2. Callbacks
+## Callbacks
 
-Callbacks allow hooking into the training lifecycle. Base class: `ununennium.training.callbacks.Callback`.
+### Base Callback
 
-### Built-in Callbacks
+```python
+class Callback:
+    """Base callback class.
+    
+    Methods
+    -------
+    on_train_start(trainer)
+    on_train_end(trainer)
+    on_epoch_start(trainer, epoch)
+    on_epoch_end(trainer, epoch, logs)
+    on_batch_start(trainer, batch_idx)
+    on_batch_end(trainer, batch_idx, logs)
+    """
+```
 
-### `CheckpointCallback`
-
-Saves model weights based on metric monitoring.
+### CheckpointCallback
 
 ```python
 class CheckpointCallback(Callback):
-    def __init__(self, 
-                 dirpath: str, 
-                 monitor: str = "val_loss", 
-                 mode: str = "min", 
-                 save_top_k: int = 1)
+    """Save model checkpoints.
+    
+    Parameters
+    ----------
+    path : str | Path
+        Directory to save checkpoints.
+    monitor : str, optional
+        Metric to monitor. Default: "val_loss".
+    mode : str, optional
+        "min" or "max". Default: "min".
+    save_best_only : bool, optional
+        Only save best model. Default: True.
+    save_last : bool, optional
+        Always save latest. Default: True.
+    """
 ```
 
-*   **save_top_k**: Keep only the best $K$ models.
-*   **mode**: `min` for loss, `max` for accuracy/IoU.
-
-### `EarlyStopping`
-
-Halts training if the monitored metric stops improving.
+### EarlyStoppingCallback
 
 ```python
-class EarlyStopping(Callback):
-    def __init__(self, 
-                 monitor: str = "val_loss", 
-                 patience: int = 10, 
-                 min_delta: float = 0.0)
+class EarlyStoppingCallback(Callback):
+    """Stop training when metric stops improving.
+    
+    Parameters
+    ----------
+    monitor : str, optional
+        Metric to monitor. Default: "val_loss".
+    patience : int, optional
+        Epochs to wait. Default: 10.
+    mode : str, optional
+        "min" or "max". Default: "min".
+    min_delta : float, optional
+        Minimum change threshold. Default: 1e-4.
+    """
+```
+
+### LRSchedulerCallback
+
+```python
+class LRSchedulerCallback(Callback):
+    """Learning rate scheduler.
+    
+    Parameters
+    ----------
+    scheduler : LRScheduler
+        PyTorch scheduler instance.
+    step_on : str, optional
+        When to step: "epoch" or "batch". Default: "epoch".
+    """
+```
+
+### Example: Custom Callback
+
+```python
+from ununennium.training import Callback
+
+class LoggingCallback(Callback):
+    def on_epoch_end(self, trainer, epoch, logs):
+        print(f"Epoch {epoch}: loss={logs['train_loss']:.4f}")
 ```
 
 ---
 
-## 3. Distributed Training (DDP)
+## Learning Rate Schedulers
 
-The `Trainer` is compatible with `torch.distributed`.
+Common scheduler configurations:
 
-**Usage Pattern:**
+| Scheduler | Description |
+|-----------|-------------|
+| `CosineAnnealingLR` | Cosine decay |
+| `OneCycleLR` | Super-convergence |
+| `ReduceLROnPlateau` | Reduce on plateau |
+
+### Example
 
 ```python
-# Launch with torchrun
-# torchrun --nproc_per_node=4 train.py
+from ununennium.training import LRSchedulerCallback
+import torch.optim.lr_scheduler as sched
 
-def main():
-    dist.init_process_group(backend="nccl")
-    model = DDP(model.to(rank), device_ids=[rank])
-    # Trainer handles the rest implicitly via device placement
+scheduler = sched.CosineAnnealingLR(optimizer, T_max=100)
+callback = LRSchedulerCallback(scheduler)
 ```
 
-> [!NOTE]
-> Ensure your `DataLoader` uses `DistributedSampler` when running in DDP mode to prevent workers from seeing the same data.
+---
+
+## Distributed Training
+
+### Multi-GPU Setup
+
+```python
+# Launch: torchrun --nproc_per_node=4 train.py
+
+trainer = Trainer(
+    model=model,
+    distributed=True,
+    # ...
+)
+```
+
+### Distributed Configuration
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `backend` | "nccl" | Communication backend |
+| `find_unused_params` | False | DDP parameter |
+
+---
+
+## Metrics Integration
+
+```python
+from ununennium.metrics import IoU, Dice
+
+trainer = Trainer(
+    # ...
+    metrics=[
+        IoU(num_classes=10),
+        Dice(num_classes=10),
+    ],
+)
+```
