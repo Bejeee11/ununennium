@@ -6,7 +6,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/ununennium?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/ununennium/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/ununennium?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/ununennium/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/ununennium?logo=python&logoColor=white)](https://pypi.org/project/ununennium/)
-[![Conda Version](https://img.shields.io/conda/vn/conda-forge/ununennium?logo=anaconda&logoColor=white)](https://anaconda.org/conda-forge/ununennium)
+[![Conda Version](https://img.shields.io/conda/vn/olaflaitinen/ununennium?logo=anaconda&logoColor=white)](https://anaconda.org/olaflaitinen/ununennium)
 
 <!-- CI/CD Status -->
 [![CI Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&label=CI&logo=github)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
