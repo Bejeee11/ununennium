@@ -107,11 +107,11 @@ all = [
 ununennium = "ununennium.cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/ununennium/ununennium"
-Documentation = "https://ununennium.readthedocs.io"
-Repository = "https://github.com/ununennium/ununennium"
-Issues = "https://github.com/ununennium/ununennium/issues"
-Changelog = "https://github.com/ununennium/ununennium/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/olaflaitinen/ununennium"
+Documentation = "https://github.com/olaflaitinen/ununennium/tree/main/docs"
+Repository = "https://github.com/olaflaitinen/ununennium"
+Issues = "https://github.com/olaflaitinen/ununennium/issues"
+Changelog = "https://github.com/olaflaitinen/ununennium/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ununennium"]

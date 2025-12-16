@@ -10,7 +10,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/olaflaitinen/ununennium?style=social)](https://github.com/olaflaitinen/ununennium)
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/olaflaitinen/ununennium/ci.yml?branch=main&label=CI)](https://github.com/olaflaitinen/ununennium/actions/workflows/ci.yml)
-[![Documentation Status](https://readthedocs.org/projects/ununennium/badge/?version=latest)](https://ununennium.readthedocs.io/en/latest/?badge=latest)
+[![Documentation](https://img.shields.io/badge/docs-GitHub-blue)](https://github.com/olaflaitinen/ununennium/tree/main/docs)
 [![Codecov](https://img.shields.io/codecov/c/github/olaflaitinen/ununennium)](https://codecov.io/gh/olaflaitinen/ununennium)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
@@ -26,7 +26,7 @@
 
 **Production-grade Python library for satellite and geospatial imagery machine learning.**
 
-[Documentation](https://ununennium.readthedocs.io) •
+[Documentation](https://github.com/olaflaitinen/ununennium/tree/main/docs) •
 [PyPI](https://pypi.org/project/ununennium/) •
 [GitHub](https://github.com/olaflaitinen/ununennium) •
 [Examples](https://github.com/olaflaitinen/ununennium/tree/main/examples)
@@ -207,11 +207,11 @@ ununennium/
 
 ## Documentation
 
-- [Getting Started](https://ununennium.readthedocs.io/getting-started/)
-- [API Reference](https://ununennium.readthedocs.io/api/)
-- [Tutorials](https://ununennium.readthedocs.io/tutorials/)
-- [Model Zoo](https://ununennium.readthedocs.io/models/)
-- [Theory](https://ununennium.readthedocs.io/theory/)
+- [Getting Started](docs/getting_started.md)
+- [API Reference](docs/api/core.md)
+- [Tutorials](docs/tutorials/quickstart.md)
+- [Model Zoo](docs/models/model_zoo.md)
+- [Theory](docs/theory/sampling_theory.md)
 
 ---
 

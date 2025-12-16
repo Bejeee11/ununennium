@@ -1,9 +1,9 @@
 site_name: Ununennium
 site_description: Production-grade Python library for satellite imagery ML
-site_url: https://ununennium.readthedocs.io
+site_url: https://olaflaitinen.github.io/ununennium
 
-repo_name: ununennium/ununennium
-repo_url: https://github.com/ununennium/ununennium
+repo_name: olaflaitinen/ununennium
+repo_url: https://github.com/olaflaitinen/ununennium
 
 theme:
   name: material
@@ -33,12 +33,12 @@ nav:
   - API Reference:
     - Core: api/core.md
     - I/O: api/io.md
-    - Models: api/models.md
     - Training: api/training.md
   - Tutorials:
-    - Segmentation: tutorials/segmentation.md
-    - Change Detection: tutorials/change_detection.md
-  - Model Zoo: models/zoo.md
+    - Quickstart: tutorials/quickstart.md
+    - GAN Training: tutorials/gan_training.md
+    - PINN Training: tutorials/pinn_training.md
+  - Model Zoo: models/model_zoo.md
 
 plugins:
   - search

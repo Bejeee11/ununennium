@@ -94,5 +94,5 @@ history = trainer.fit(epochs=10)
 ## Next Steps
 
 - [API Reference](api/core.md)
-- [Tutorials](tutorials/segmentation.md)
-- [Model Zoo](models/zoo.md)
+- [Tutorials](tutorials/quickstart.md)
+- [Model Zoo](models/model_zoo.md)
